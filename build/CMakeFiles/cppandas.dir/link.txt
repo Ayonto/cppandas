@@ -1,0 +1,2 @@
+C:\mingw64\bin\ar.exe qc libcppandas.a CMakeFiles/cppandas.dir/src/cppandas.cpp.obj
+C:\mingw64\bin\ranlib.exe libcppandas.a

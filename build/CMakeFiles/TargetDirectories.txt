@@ -1,0 +1,4 @@
+A:/dev/cppandas/build/CMakeFiles/cppandas.dir
+A:/dev/cppandas/build/CMakeFiles/test_cppandas.dir
+A:/dev/cppandas/build/CMakeFiles/edit_cache.dir
+A:/dev/cppandas/build/CMakeFiles/rebuild_cache.dir
