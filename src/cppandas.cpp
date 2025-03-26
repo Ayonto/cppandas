@@ -1,28 +1,12 @@
 #include <cppandas.h>
 #include <iostream>
 
-bool DataFrame::is_number(const std::string& s) { 
-    try {
-        std::stod(s); 
-        return true; 
-    }
-    catch (...) { return false;}
+
+bool DataFrame::is_empty(const std::string& value) const {
+    return value.empty() || 
+           std::all_of(value.begin(), value.end(), [](char c) { return std::isspace(c); });
 }
 
-std::optional<double> DataFrame::try_convert_double(const std::string& s) { 
-    try { 
-        return std::stod(s); 
-    }
-    catch(...) {return std::nullopt; }
-
-}
-
-std::string DataFrame::infer_col_type(const std::vector<std::string>& col_data) { 
-    for (auto& val: col_data) { 
-        if(!is_number(val)){return "string"; }
-    }
-    return "number"; 
-}
 
 void DataFrame::read_csv(const std::string& filename) { 
     std::ifstream file(filename); 
@@ -32,64 +16,84 @@ void DataFrame::read_csv(const std::string& filename) {
 
     std::string line; 
     
+    // read column names 
     if(std::getline(file, line)) { 
         std::stringstream ss(line); 
         std::string column; 
         while(std::getline(ss, column, ',')) { 
             columns.push_back(column); 
-            data[column] = DataFrameColumn(); 
+            data[column] = std::vector<std::string>(); 
         }
     }
 
-    std::map<std::string, std::vector<std::string>> raw_data; 
-    for(auto& col: columns) { 
-        raw_data[col] = std::vector<std::string>(); 
-    }
-
+    // read row-wise data 
     while(std::getline(file, line)) { 
         std::stringstream ss(line); 
         std::string value ; 
 
         int col_idx = 0; 
         while(std::getline(ss, value, ',')) { 
-            raw_data[columns[col_idx]].push_back(value); 
+            data[columns[col_idx]].push_back(is_empty(value) ? "NaN" : value); 
             col_idx++; 
         }
     }
 
     file.close(); 
 
-
-    for(auto& col: columns) { 
-        std::string col_type = infer_col_type(raw_data[col]); 
-        dtypes[col] = col_type; 
-
-        for(auto& val: raw_data[col]) { 
-            if (col_type == "number") { 
-                data[col].push_back(std::stod(val)); 
-            } else { data[col].push_back(val); }
-        }
-    }
 }
 
-DataFrameColumn DataFrame::operator[](const std::string& column_name) const {
+std::vector<std::string> DataFrame::operator[](const std::string& column_name) const {
     return data.at(column_name);
 }
 
 void DataFrame::head(int n) const {
     for (const auto& col : columns) {
-        std::cout << col << " (" << dtypes.at(col) << ")\t";
+        std::cout << col << "\t";
     }
     std::cout << std::endl;
 
     for (int i = 0; i < n && i < data.at(columns[0]).size(); ++i) {
         for (const auto& col : columns) {
-            std::visit(
-                [](const auto& v) { std::cout << v << "\t"; },
-                data.at(col)[i]
-            );
+            std::cout << data.at(col)[i] << "\t";
         }
         std::cout << std::endl;
+    }
+}
+
+void DataFrame::dropna() {
+    if (data.empty()) return;
+
+    const size_t row_count = data.begin()->second.size();
+    std::vector<size_t> rows_to_keep;
+
+    for (size_t i = 0; i < row_count; ++i) {
+        bool has_na = false;
+        for (const auto& [col, values] : data) {
+            if (values[i] == "NaN") {
+                has_na = true;
+                break;
+            }
+        }
+        if (!has_na) {
+            rows_to_keep.push_back(i);
+        }
+    }
+
+ 
+    for (auto& [col, values] : data) {
+        std::vector<std::string> filtered_values;
+        for (size_t i : rows_to_keep) {
+            filtered_values.push_back(values[i]);
+        }
+        values = std::move(filtered_values); 
+    }
+}
+
+void DataFrame::fillna(const std::string& value) { 
+    for(const auto& col: data) { 
+        for(int i = 0; i< data.at(col.first).size(); i++) { 
+            if(col.second[i] == "NaN") { data.at(col.first)[i] = value; }
+        }
     }
 }
 

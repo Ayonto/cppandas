@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cppandas.h>
+#include <typeinfo> 
 
 int main() {
     DataFrame df;
@@ -8,13 +9,25 @@ int main() {
     std::cout << "Original DataFrame:" << std::endl;
     df.head();
 
-    DataFrameColumn frame = df["Age"]; 
-    std::cout << "Age Column" << std::endl; 
-    for (const auto& i: frame) { 
-        std::visit([](const auto& f){
-            std::cout << f << std::endl;
-        }, i);
+
+    // df.fillna("0.0");
+    // df.dropna(); 
+
+    std::vector<std::string> frame = df["Age"]; 
+    
+
+    std::vector<std::vector<std::string>> fetched = df.to_vector<std::string>({"Age", "Speed_of_Impact"});
+
+    std::cout << "Getting Vector" << std::endl;
+    for(const auto& row: fetched) {
+        for(const auto& i : row) { 
+            std::cout << i << "\t"; 
+        }
+        std::cout << "\n"; 
     }
+
+    std::cout << typeid(fetched[0][0]).name() << std::endl;
+
     
     return 0;
 }

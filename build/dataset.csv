@@ -1,5 +1,5 @@
 Age,Gender,Speed_of_Impact,Helmet_Used,Seatbelt_Used,Survived
-56,Female,27,No,No,1
+56,Female,,No,No,1
 69,Female,46,No,Yes,1
 46,Male,46,Yes,Yes,0
 32,Male,117,No,Yes,0
@@ -198,4 +198,4 @@ Age,Gender,Speed_of_Impact,Helmet_Used,Seatbelt_Used,Survived
 30,Female,51,No,Yes,1
 58,Male,110,No,Yes,1
 20,Male,103,No,Yes,1
-56,Female,43,No,Yes,1
+56,,43,No,Yes,1
